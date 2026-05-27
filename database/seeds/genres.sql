@@ -1,4 +1,5 @@
-INSERT INTO genres (name, alt, slug) VALUES
+-- Music genres' seed --
+INSERT INTO genres (name, alt_name, slug) VALUES
 ('Alternative', NULL, 'alternative'),
 ('Art Punk', NULL, 'art_punk'),
 ('Alternative Rock', NULL, 'alternative_rock'),
