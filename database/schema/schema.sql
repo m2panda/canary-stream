@@ -1,16 +1,3 @@
--- Enum data types declaration --
-CREATE TYPE IF NOT EXISTS member_status AS ENUM (
-  'active',
-  'ex'
-);
-
-CREATE TYPE IF NOT EXISTS collection_format AS ENUM (
-  'album',
-  'ep',
-  'single',
-  'playlist'
-);
-
 -- DB tables creation --
 CREATE TABLE IF NOT EXISTS users (
   _id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
@@ -29,7 +16,7 @@ CREATE TABLE IF NOT EXISTS genres (
 CREATE TABLE IF NOT EXISTS artists (
   _id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   stage_name VARCHAR(255) NOT NULL,
-  group BOOLEAN NOT NULL,
+  is_group BOOLEAN NOT NULL,
   bio TEXT,
   picture CHARACTER(12) UNIQUE
 );
