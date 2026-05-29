@@ -1,0 +1,11 @@
+services:
+  postgres-db:
+    volumes:
+      - ./database:/docker-entrypoint-initdb.d:ro
+  golang-api:
+    build:
+      target: development
+    ports:
+      - "8080:8080"
+    volumes:
+      - ./backend:/app

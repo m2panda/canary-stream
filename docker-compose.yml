@@ -1,23 +1,42 @@
-version: "3.8"
-
 services:
   postgres-db:
     container_name: cs-pgdb
     image: postgres:18-alpine
     expose:
-      - "5432"
+      - "${DB_PORT}"
     networks:
-      - cs-internal
+      - cs_net
     environment:
       - POSTGRES_DB=${POSTGRES_DB}
       - POSTGRES_USER=${POSTGRES_USER}
       - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
     volumes:
-      - ./database:/docker-entrypoint-initdb.d:ro
       - pgdata:/var/lib/postgresql/18/docker
+  golang-api:
+    container_name: cs-goapi
+    expose:
+      - "${API_PORT}"
+    build:
+      context: ./backend/
+      dockerfile: Dockerfile
+      target: production
+      args:
+        - API_PORT=${API_PORT}
+    networks:
+      - cs_net
+    environment:
+      - API_PORT=${API_PORT}
+      - DB_HOST=${DB_HOST}
+      - DB_PORT=${DB_PORT}
+      - POSTGRES_DB=${POSTGRES_DB}
+      - POSTGRES_USER=${POSTGRES_USER}
+      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
+    depends_on:
+      - postgres-db
 
 volumes:
   pgdata:
 
 networks:
-  cs-internal:
+  cs_net:
+    driver: bridge

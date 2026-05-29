@@ -1,0 +1,6 @@
+# air tool
+tmp/
+
+# docker
+.dockerignore
+Dockerfile
