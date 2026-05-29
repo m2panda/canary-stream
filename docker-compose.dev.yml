@@ -6,6 +6,6 @@ services:
     build:
       target: development
     ports:
-      - "8080:8080"
+      - "${API_PORT}:${API_PORT}"
     volumes:
       - ./backend:/app
