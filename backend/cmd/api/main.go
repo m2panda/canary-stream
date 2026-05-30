@@ -1,13 +1,24 @@
 package main
 
 import (
+	"fmt"
 	"log"
 	"net/http"
+	"os"
+
+	"canary-stream/backend/internal/framework"
 )
 
 func main() {
-	err := http.ListenAndServe(":8080", http.FileServer(http.Dir(".")))
-	if err != nil {
+	apiPort := os.Getenv("API_PORT")
+
+	server := http.NewServeMux()
+
+	if err := framework.RouterSetup(server); err != nil {
+		log.Printf("Error on router setup %v", err)
+	}
+
+	if err := http.ListenAndServe(fmt.Sprintf(":%s", apiPort), server); err != nil {
 		log.Printf("Error launching serv %v", err)
 	}
 }
