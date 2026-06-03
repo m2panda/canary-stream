@@ -45,6 +45,7 @@ services:
       - CACHE_PORT=${CACHE_PORT}
     depends_on:
       - postgres-db
+      - valkey-caching
 
 volumes:
   pgdata:
