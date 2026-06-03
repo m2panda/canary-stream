@@ -12,6 +12,17 @@ services:
       - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
     volumes:
       - pgdata:/var/lib/postgresql/18/docker
+  valkey-caching:
+    container_name: cs-vkcache
+    image: valkey/valkey:9.1-alpine
+    expose:
+      - "${CACHE_PORT}"
+    networks:
+      - cs_net
+    volumes:
+      - vkdata:/data
+    command: valkey-server --maxmemory 256mb \
+      --maxmemory-policy allkeys-lfu
   golang-api:
     container_name: cs-goapi
     expose:
@@ -31,11 +42,13 @@ services:
       - POSTGRES_DB=${POSTGRES_DB}
       - POSTGRES_USER=${POSTGRES_USER}
       - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
+      - CACHE_PORT=${CACHE_PORT}
     depends_on:
       - postgres-db
 
 volumes:
   pgdata:
+  vkdata:
 
 networks:
   cs_net:
