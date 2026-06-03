@@ -9,6 +9,7 @@ FILES=(
   "schema/types"
   "schema/schema"
 
+  "seeds/status"
   "seeds/genres"
 )
 
