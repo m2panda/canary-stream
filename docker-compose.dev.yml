@@ -2,6 +2,10 @@ services:
   postgres-db:
     volumes:
       - ./database:/docker-entrypoint-initdb.d:ro
+  valkey-caching:
+    volumes:
+      - ./cache:/usr/local/etc/valkey
+    command: valkey-server /usr/local/etc/valkey/valkey.conf
   golang-api:
     build:
       target: development

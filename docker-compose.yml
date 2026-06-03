@@ -2,6 +2,7 @@ services:
   postgres-db:
     container_name: cs-pgdb
     image: postgres:18-alpine
+    restart: unless-stopped
     expose:
       - "${DB_PORT}"
     networks:
@@ -15,16 +16,22 @@ services:
   valkey-caching:
     container_name: cs-vkcache
     image: valkey/valkey:9.1-alpine
+    restart: unless-stopped
     expose:
       - "${CACHE_PORT}"
     networks:
       - cs_net
     volumes:
       - vkdata:/data
-    command: valkey-server --maxmemory 256mb \
-      --maxmemory-policy allkeys-lfu
+    deploy:
+      resources:
+        reservations:
+          memory: 128M
+        limits:
+          memory: 256M
   golang-api:
     container_name: cs-goapi
+    restart: unless-stopped
     expose:
       - "${API_PORT}"
     build:
