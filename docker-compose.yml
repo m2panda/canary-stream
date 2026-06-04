@@ -49,6 +49,7 @@ services:
       - POSTGRES_DB=${POSTGRES_DB}
       - POSTGRES_USER=${POSTGRES_USER}
       - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
+      - CACHE_HOST=${CACHE_HOST}
       - CACHE_PORT=${CACHE_PORT}
     depends_on:
       - postgres-db

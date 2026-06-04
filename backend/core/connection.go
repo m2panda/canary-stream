@@ -7,6 +7,7 @@ import (
 	"os"
 
 	"github.com/jackc/pgx/v5/pgxpool"
+	"github.com/valkey-io/valkey-go"
 )
 
 func DBConnection() (*pgxpool.Pool, error) {
@@ -31,4 +32,22 @@ func DBConnection() (*pgxpool.Pool, error) {
 	log.Printf("Postgres connection completed")
 
 	return dbPool, nil
+}
+
+func CacheConnection() (valkey.Client, error) {
+	cacheHost := os.Getenv("CACHE_HOST")
+	cachePort := os.Getenv("CACHE_PORT")
+
+	client, err := valkey.NewClient(valkey.ClientOption{
+		InitAddress: []string{fmt.Sprintf("%s:%s", cacheHost, cachePort)},
+	})
+
+	if err != nil {
+		log.Printf("Error connecting to valkey: %v", err)
+		return nil, err
+	}
+
+	log.Printf("Valkey connection completed")
+
+	return client, nil
 }

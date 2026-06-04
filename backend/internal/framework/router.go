@@ -10,17 +10,19 @@ import (
 	"net/http"
 
 	"github.com/jackc/pgx/v5/pgxpool"
+	"github.com/valkey-io/valkey-go"
 )
 
 var mux *http.ServeMux
 var db *pgxpool.Pool
+var vk valkey.Client
 
 func statusRouter() {
-	if mux == nil || db == nil {
+	if mux == nil || db == nil || vk == nil {
 		return
 	}
 
-	repository := repository.NewStatusRepository(db)
+	repository := repository.NewStatusRepository(db, vk)
 	usecase := usecase.NewStatusUseCase(repository)
 
 	getAllHandler := status.NewGetAllHandler(usecase)
@@ -48,7 +50,14 @@ func RouterSetup(server *http.ServeMux) error {
 		return fmt.Errorf("Error established connection with db: %w", err)
 	}
 
+	client, err := core.CacheConnection()
+
+	if err != nil {
+		return fmt.Errorf("Error established connection with valkey: %w", err)
+	}
+
 	db = pool
+	vk = client
 	mux = server
 
 	statusRouter()
