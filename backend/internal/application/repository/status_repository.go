@@ -7,7 +7,6 @@ import (
 	"encoding/json"
 	"fmt"
 	"log"
-	"strings"
 	"time"
 
 	"github.com/jackc/pgx/v5/pgxpool"
@@ -19,114 +18,114 @@ type statusRepository struct {
 	vk valkey.Client
 }
 
-func (repository *statusRepository) SelectAll(ctx context.Context) ([]domain.Status, error) {
-	const statusIndex string = "statusIndex"
-	const expire int64 = 600
-	const expireDuration time.Duration = time.Duration(expire * int64(time.Second))
+func vcStatus(ctx context.Context, repository *statusRepository, statusKey string) ([]domain.Status, error) {
+	var statusData []domain.Status
+	var cacheHit bool = true
 
-	resp := repository.vk.Do(ctx, repository.vk.B().Smembers().
-		Key(statusIndex).
-		Build())
+	keys, err := repository.vk.
+		Do(ctx, repository.vk.B().Smembers().Key(statusKey).Build()).
+		AsStrSlice()
 
-	keys, err := resp.AsStrSlice()
-
-	log.Printf("keys: %s", strings.Join(keys, "-"))
-
-	if err == nil && len(keys) > 0 {
-		var statusList []domain.Status
-		var cacheHit = true
-
-		for _, slugStr := range keys {
-			key := fmt.Sprintf("status:%s", slugStr)
-
-			getResp := repository.vk.Do(
-				ctx,
-				repository.vk.B().Get().Key(key).Build(),
-			)
-
-			statusData, err := getResp.AsBytes()
-
-			log.Printf("getting: %s", string(statusData))
-
-			if err != nil {
-				cacheHit = false
-				break
-			}
-
-			var s domain.Status
-
-			if err := json.Unmarshal(statusData, &s); err != nil {
-				cacheHit = false
-				break
-			}
-
-			statusList = append(statusList, s)
-		}
-
-		if cacheHit {
-			return statusList, nil
-		}
+	if err != nil || len(keys) < 1 {
+		log.Printf("Error getting status keys: %v, len: %v", err, len(keys))
+		return nil, fmt.Errorf("Error getting status index values: %w", err)
 	}
 
-	log.Printf("No cache finded")
+	for i, slug := range keys {
+		var statusSchema domain.Status
 
+		key := fmt.Sprintf("status:%s", slug)
+
+		value, err := repository.vk.
+			Do(ctx, repository.vk.B().Get().Key(key).Build()).
+			AsBytes()
+
+		if err != nil {
+			log.Printf("Error mapping status values at %v: %v", i, err)
+			cacheHit = false
+			break
+		}
+
+		if err := json.Unmarshal(value, &statusSchema); err != nil {
+			cacheHit = false
+			break
+		}
+
+		statusData = append(statusData, statusSchema)
+	}
+
+	if !cacheHit {
+		return nil, fmt.Errorf("Error mapping status data")
+	}
+
+	return statusData, nil
+}
+
+func scStatus(ctx context.Context, repository *statusRepository, status []domain.Status, statusKey string) {
+	const expire int64 = 600
+	const duration time.Duration = time.Duration(expire * int64(time.Second))
+
+	for i, state := range status {
+		data, err := json.Marshal(state)
+
+		if err != nil {
+			log.Printf("Error saving on cache row %v, %v: %v", i, state.Slug, err)
+			continue
+		}
+
+		key := fmt.Sprintf("status:%s", state.Slug)
+		value := string(data)
+
+		repository.vk.Do(ctx, repository.vk.B().Set().Key(key).Value(value).Ex(duration).Build())
+		repository.vk.Do(ctx, repository.vk.B().Sadd().Key(statusKey).Member(state.Slug).Build())
+	}
+
+	repository.vk.Do(ctx, repository.vk.B().Expire().Key(statusKey).Seconds(expire).Build())
+}
+
+func (repository *statusRepository) SelectAll(ctx context.Context) ([]domain.Status, error) {
+	const statusIndex string = "statusIndex"
+	var status []domain.Status
+	var rowHit bool = true
+
+	data, err := vcStatus(ctx, repository, statusIndex)
+
+	if err == nil {
+		return data, nil
+	}
+
+	log.Printf("No status data finded on cache")
 	rows, err := repository.db.Query(ctx, core.Queries["STATUS_GET_ALL"])
 
 	if err != nil {
-		return nil, fmt.Errorf("failed to query status data: %w", err)
+		log.Printf("Failed to query status data: %v", err)
+		return nil, err
 	}
 
 	defer rows.Close()
 
-	var status []domain.Status
-
 	for rows.Next() {
-		var row domain.Status
+		var state domain.Status
 
 		err = rows.Scan(
-			&row.Name,
-			&row.Slug,
+			&state.Name,
+			&state.Slug,
 		)
 
 		if err != nil {
-			return nil, fmt.Errorf("Failed to scan genre row: %w", err)
+			log.Printf("Failed to patch status values for row: %v", err)
+			rowHit = false
+			break
 		}
 
-		status = append(status, row)
+		status = append(status, state)
 	}
 
-	if err = rows.Err(); err != nil {
-		return nil, fmt.Errorf("Error during row iteration: %w", err)
+	if !rowHit || rows.Err() != nil {
+		return nil, fmt.Errorf("Error scanning status db data")
 	}
 
-	log.Printf("saving data on cache")
-
-	for _, s := range status {
-		jsonData, err := json.Marshal(s)
-
-		log.Printf("data: %s", string(jsonData))
-
-		if err != nil {
-			continue
-		}
-
-		keySlug := fmt.Sprintf("status:%s", s.Slug)
-
-		repository.vk.Do(
-			ctx,
-			repository.vk.B().Set().Key(keySlug).Value(string(jsonData)).Ex(expireDuration).Build(),
-		)
-
-		repository.vk.Do(
-			ctx,
-			repository.vk.B().Sadd().Key(statusIndex).Member(s.Slug).Build(),
-		)
-	}
-
-	repository.vk.Do(
-		ctx,
-		repository.vk.B().Expire().Key(statusIndex).Seconds(expire).Build(),
-	)
+	scStatus(ctx, repository, status, statusIndex)
 
 	return status, nil
 }
