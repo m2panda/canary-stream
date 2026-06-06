@@ -10,6 +10,11 @@ import (
 	"github.com/valkey-io/valkey-go"
 )
 
+/**
+ * Main function to connect to postgresql using pgx
+ * library and env connection values; first making
+ * db pool and then verifying conection is successful
+ */
 func DBConnection() (*pgxpool.Pool, error) {
 	dbName := os.Getenv("POSTGRES_DB")
 	dbUser := os.Getenv("POSTGRES_USER")
@@ -22,18 +27,22 @@ func DBConnection() (*pgxpool.Pool, error) {
 	dbPool, err := pgxpool.New(context.Background(), dbURL)
 
 	if err != nil {
+		log.Printf("Error creating pgx db pool: %v", err)
 		return nil, err
 	}
 
 	if err = dbPool.Ping(context.Background()); err != nil {
+		log.Printf("Error verifying db connection: %v", err)
 		return nil, err
 	}
-
-	log.Printf("Postgres connection completed")
 
 	return dbPool, nil
 }
 
+/**
+ * Function to connect valkey server using
+ * official valkey go library with env port information
+ */
 func CacheConnection() (valkey.Client, error) {
 	cacheHost := os.Getenv("CACHE_HOST")
 	cachePort := os.Getenv("CACHE_PORT")
@@ -46,8 +55,6 @@ func CacheConnection() (valkey.Client, error) {
 		log.Printf("Error connecting to valkey: %v", err)
 		return nil, err
 	}
-
-	log.Printf("Valkey connection completed")
 
 	return client, nil
 }

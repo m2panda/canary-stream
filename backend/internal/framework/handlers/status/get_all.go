@@ -10,6 +10,10 @@ type getAllHandler struct {
 	usecase domain.StatusUseCase
 }
 
+/**
+ * Handler to get complete status
+ * registers as dictionary information
+ */
 func (handler *getAllHandler) ServeHTTP(response http.ResponseWriter, request *http.Request) {
 	ctx := request.Context()
 	status, err := handler.usecase.GetAll(ctx)

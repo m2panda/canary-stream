@@ -17,6 +17,7 @@ var mux *http.ServeMux
 var db *pgxpool.Pool
 var vk valkey.Client
 
+// Support function to route status entity handlers
 func statusRouter() {
 	if mux == nil || db == nil || vk == nil {
 		return
@@ -43,6 +44,12 @@ func genreRouter() {
 	mux.Handle("GET /genres", getAllHandler)
 }
 
+/**
+ * Main function to initialize server routing; first use
+ * core function to connect to db and then to valkey server;
+ * set package variable values; call each support function
+ * to route entity endpoints
+ */
 func RouterSetup(server *http.ServeMux) error {
 	pool, err := core.DBConnection()
 

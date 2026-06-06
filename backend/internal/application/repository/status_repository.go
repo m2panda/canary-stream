@@ -18,6 +18,12 @@ type statusRepository struct {
 	vk valkey.Client
 }
 
+/**
+ * Fuction to check if status data is available
+ * on cache with valkey; getting at first each status slug
+ * as status index member; then verifying for each one
+ * value saved and returned only if there isn't any error
+ */
 func vcStatus(ctx context.Context, repository *statusRepository, statusKey string) ([]domain.Status, error) {
 	var statusData []domain.Status
 	var cacheHit bool = true
@@ -46,6 +52,7 @@ func vcStatus(ctx context.Context, repository *statusRepository, statusKey strin
 			break
 		}
 
+		// verify if saved data is compatible with status schema
 		if err := json.Unmarshal(value, &statusSchema); err != nil {
 			cacheHit = false
 			break
@@ -61,6 +68,13 @@ func vcStatus(ctx context.Context, repository *statusRepository, statusKey strin
 	return statusData, nil
 }
 
+/**
+ * Save consulted data in cache; define 10 minutes as time
+ * to saved values expire; for each status value save register
+ * and add slug to status index as member; if there is an
+ * error transform data to json format continue with next one
+ * and finally add expire time to status index register
+ */
 func scStatus(ctx context.Context, repository *statusRepository, status []domain.Status, statusKey string) {
 	const expire int64 = 600
 	const duration time.Duration = time.Duration(expire * int64(time.Second))
@@ -83,6 +97,13 @@ func scStatus(ctx context.Context, repository *statusRepository, status []domain
 	repository.vk.Do(ctx, repository.vk.B().Expire().Key(statusKey).Seconds(expire).Build())
 }
 
+/**
+ * Main function to get status complete registers as
+ * dictionary information; first calling support function
+ * vcStatus; if no data returned make query to db; for
+ * each register parse data to status schema finally if
+ * pno error ocurred, call scStatus to save data in cache
+ */
 func (repository *statusRepository) SelectAll(ctx context.Context) ([]domain.Status, error) {
 	const statusIndex string = "statusIndex"
 	var status []domain.Status
@@ -107,6 +128,7 @@ func (repository *statusRepository) SelectAll(ctx context.Context) ([]domain.Sta
 	for rows.Next() {
 		var state domain.Status
 
+		// parse data as status schema
 		err = rows.Scan(
 			&state.Name,
 			&state.Slug,

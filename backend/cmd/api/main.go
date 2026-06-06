@@ -9,6 +9,12 @@ import (
 	"canary-stream/backend/internal/framework"
 )
 
+/**
+ * Main function to start rest api server;
+ * use env information to expore connection
+ * port; create mux server and call router
+ * to initialize configuration
+ */
 func main() {
 	apiPort := os.Getenv("API_PORT")
 
