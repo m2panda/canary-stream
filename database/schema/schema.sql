@@ -10,7 +10,7 @@ CREATE TABLE IF NOT EXISTS users (
   username VARCHAR(50) UNIQUE NOT NULL,
   password VARCHAR(255) NOT NULL,
   role user_role NOT NULL,
-  picture CHARACTER(12),
+  picture UUID,
   created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
   status_id UUID NOT NULL REFERENCES status(_id)
 );
@@ -25,7 +25,7 @@ CREATE TABLE IF NOT EXISTS artists (
   _id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   stagename VARCHAR(255) UNIQUE NOT NULL,
   bio TEXT,
-  picture CHARACTER(12) UNIQUE
+  picture UUID UNIQUE
 );
 
 CREATE TABLE IF NOT EXISTS members (
@@ -38,8 +38,8 @@ CREATE TABLE IF NOT EXISTS members (
 CREATE TABLE IF NOT EXISTS songs (
   _id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   title VARCHAR(255) NOT NULL,
-  audio CHARACTER(12) UNIQUE NOT NULL,
-  lyrics CHARACTER(12) UNIQUE NOT NULL,
+  audio UUID UNIQUE NOT NULL,
+  lyrics UUID UNIQUE NOT NULL,
   duration SMALLINT,
   explicit BOOLEAN,
   artist_id UUID REFERENCES artists(_id)
@@ -63,7 +63,7 @@ CREATE TABLE IF NOT EXISTS collections (
   format collection_format NOT NULL,
   release SMALLINT,
   description TEXT,
-  cover CHARACTER(12),
+  cover UUID,
   artist_id UUID REFERENCES artists(_id)
 );
 
@@ -78,7 +78,7 @@ CREATE TABLE IF NOT EXISTS playlist (
   _id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
   name VARCHAR(255) NOT NULL,
   history BOOLEAN NOT NULL,
-  picture CHARACTER(12),
+  picture UUID,
   user_id UUID NOT NULL REFERENCES users(_id),
   status_id UUID NOT NULL REFERENCES status(_id)
 );

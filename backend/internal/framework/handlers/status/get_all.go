@@ -2,6 +2,7 @@ package status
 
 import (
 	"canary-stream/backend/internal/domain"
+	"canary-stream/backend/internal/framework/dto"
 	"encoding/json"
 	"net/http"
 )
@@ -15,6 +16,8 @@ type getAllHandler struct {
  * registers as dictionary information
  */
 func (handler *getAllHandler) ServeHTTP(response http.ResponseWriter, request *http.Request) {
+	var data []dto.StatusResponse
+
 	ctx := request.Context()
 	status, err := handler.usecase.GetAll(ctx)
 
@@ -23,10 +26,18 @@ func (handler *getAllHandler) ServeHTTP(response http.ResponseWriter, request *h
 		return
 	}
 
+	for _, state := range status {
+		var object dto.StatusResponse
+
+		(&object).Mapper(state)
+
+		data = append(data, object)
+	}
+
 	response.Header().Set("Content-Type", "application/json")
 	response.WriteHeader(http.StatusOK)
 
-	json.NewEncoder(response).Encode(status)
+	json.NewEncoder(response).Encode(data)
 }
 
 func NewGetAllHandler(usecase domain.StatusUseCase) *getAllHandler {

@@ -130,6 +130,7 @@ func (repository *statusRepository) SelectAll(ctx context.Context) ([]domain.Sta
 
 		// parse data as status schema
 		err = rows.Scan(
+			&state.ID,
 			&state.Name,
 			&state.Slug,
 		)

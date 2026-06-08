@@ -3,6 +3,7 @@ package domain
 import "context"
 
 type Status struct {
+	ID   string `json:"id"`
 	Name string `json:"name"`
 	Slug string `json:"slug"`
 }
