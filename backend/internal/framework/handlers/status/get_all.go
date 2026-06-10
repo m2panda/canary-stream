@@ -34,10 +34,15 @@ func (handler *getAllHandler) ServeHTTP(response http.ResponseWriter, request *h
 		data = append(data, object)
 	}
 
+	var apiResponse dto.ApiResponse[[]dto.StatusResponse]
+
+	apiResponse.Success = true
+	apiResponse.Data = &data
+
 	response.Header().Set("Content-Type", "application/json")
 	response.WriteHeader(http.StatusOK)
 
-	json.NewEncoder(response).Encode(data)
+	json.NewEncoder(response).Encode(apiResponse)
 }
 
 func NewGetAllHandler(usecase domain.StatusUseCase) *getAllHandler {

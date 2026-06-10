@@ -1,7 +1,7 @@
 package repository
 
 import (
-	"canary-stream/backend/core"
+	"canary-stream/backend/internal/application/repository/query"
 	"canary-stream/backend/internal/domain"
 	"context"
 	"encoding/json"
@@ -116,7 +116,7 @@ func (repository *statusRepository) SelectAll(ctx context.Context) ([]domain.Sta
 	}
 
 	log.Printf("No status data finded on cache")
-	rows, err := repository.db.Query(ctx, core.Queries["STATUS_GET_ALL"])
+	rows, err := repository.db.Query(ctx, query.StatusGetAll)
 
 	if err != nil {
 		log.Printf("Failed to query status data: %v", err)

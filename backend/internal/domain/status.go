@@ -2,6 +2,13 @@ package domain
 
 import "context"
 
+const (
+	StatusActive  string = "active"
+	StatusDisable string = "disabled"
+	StatusPending string = "pending"
+	StatusEx      string = "ex"
+)
+
 type Status struct {
 	ID   string `json:"id"`
 	Name string `json:"name"`
