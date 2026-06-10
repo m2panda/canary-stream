@@ -11,6 +11,8 @@ CREATE TABLE IF NOT EXISTS users (
   password VARCHAR(255) NOT NULL,
   role user_role NOT NULL,
   picture UUID,
+  token CHARACTER(32),
+  token_exp TIMESTAMP,
   created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
   status_id UUID NOT NULL REFERENCES status(_id)
 );
