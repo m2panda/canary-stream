@@ -6,6 +6,7 @@ import (
 	"canary-stream/backend/internal/application/usecase"
 	"canary-stream/backend/internal/framework/handlers/genre"
 	"canary-stream/backend/internal/framework/handlers/status"
+	"canary-stream/backend/internal/framework/handlers/user"
 	"fmt"
 	"net/http"
 
@@ -17,7 +18,7 @@ var mux *http.ServeMux
 var db *pgxpool.Pool
 var vk valkey.Client
 
-// Support function to route status entity handlers
+// ! Status
 func statusRouter() {
 	if mux == nil || db == nil || vk == nil {
 		return
@@ -29,6 +30,20 @@ func statusRouter() {
 	getAllHandler := status.NewGetAllHandler(usecase)
 
 	mux.Handle("GET /status", getAllHandler)
+}
+
+// ! User
+func userRouter() {
+	if mux == nil || db == nil {
+		return
+	}
+
+	repository := repository.NewUserRepository(db)
+	usecase := usecase.NewUserUseCase(repository)
+
+	createRegisterHandler := user.NewCreateRegisterHandler(usecase)
+
+	mux.Handle("POST /register", createRegisterHandler)
 }
 
 func genreRouter() {
@@ -68,6 +83,7 @@ func RouterSetup(server *http.ServeMux) error {
 	mux = server
 
 	statusRouter()
+	userRouter()
 	genreRouter()
 
 	return nil
