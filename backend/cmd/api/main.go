@@ -2,7 +2,7 @@ package main
 
 import (
 	"fmt"
-	"log"
+	"log/slog"
 	"net/http"
 	"os"
 
@@ -17,22 +17,40 @@ import (
  * to initialize configuration
  */
 func main() {
+	core.InitLoggerService()
+
 	if err := core.RegisterCustomValidators(); err != nil {
-		log.Printf("Error on register custom validators: %v", err)
+		slog.Error("Error register custom validators",
+			"event", "validator.custom_validators",
+			"status", 500,
+			"error", err,
+		)
+
 		return
 	}
-
-	apiPort := os.Getenv("API_PORT")
 
 	server := http.NewServeMux()
 
+	apiPort := os.Getenv("API_PORT")
+	muxPort := fmt.Sprintf(":%s", apiPort)
+
 	if err := framework.RouterSetup(server); err != nil {
-		log.Printf("Error on router setup %v", err)
+		slog.Error("Error setup server router for api rest",
+			"event", "router.setup",
+			"status", 500,
+			"error", err,
+		)
+
 		return
 	}
 
-	if err := http.ListenAndServe(fmt.Sprintf(":%s", apiPort), server); err != nil {
-		log.Printf("Error launching serv %v", err)
+	if err := http.ListenAndServe(muxPort, server); err != nil {
+		slog.Error("Error launching mux server",
+			"event", "server.listen_start",
+			"port", apiPort,
+			"status", 500,
+			"error", err,
+		)
 		return
 	}
 }

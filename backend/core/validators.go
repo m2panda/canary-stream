@@ -1,7 +1,7 @@
 package core
 
 import (
-	"log"
+	"log/slog"
 
 	"github.com/go-playground/validator/v10"
 )
@@ -11,7 +11,7 @@ var (
 	specialMap map[rune]bool = make(map[rune]bool)
 )
 
-func initVariables() {
+func initValidatorVariables() {
 	list := "¡¿ªºçÇñÑ!@#$%^&*(),.?:{}|<>_+-=[]';/^~`\\\""
 
 	for _, char := range list {
@@ -42,16 +42,27 @@ func securePasswordValidator(fl validator.FieldLevel) bool {
 }
 
 func RegisterCustomValidators() error {
-	initVariables()
+	initValidatorVariables()
 
 	Validator = validator.New()
 
 	err := Validator.RegisterValidation("securepassword", securePasswordValidator)
 
 	if err != nil {
-		log.Printf("Err register password validator: %v", err)
+		slog.Error("Error register password validator",
+			"event", "validator.register_validator",
+			"validator", "secure_password",
+			"status", 500,
+			"error", err,
+		)
+
 		return err
 	}
+
+	slog.Info("Custom validators register succesful",
+		"event", "validator.custom_validators",
+		"validators", 1,
+	)
 
 	return nil
 }
