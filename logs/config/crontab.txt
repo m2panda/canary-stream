@@ -1,0 +1,1 @@
+0 0 * * * /usr/local/bin/clean_logs.sh >> /var/log/canary_stream/cron_clean.log 2>&1

@@ -1,0 +1,12 @@
+sources:
+  docker_logs:
+    type: "docker_logs"
+
+sinks:
+  file_output:
+    type: "file"
+    inputs:
+      - "docker_logs"
+    path: "/var/log/canary_stream/%Y-%m-%d/{{ container_name }}.log"
+    encoding:
+      codec: "json"
