@@ -5,3 +5,7 @@
 **/.env
 **/.env.development
 **/tmp/
+
+# logs
+**/*.log
+/logs/data

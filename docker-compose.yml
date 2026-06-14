@@ -1,4 +1,8 @@
 services:
+  # -----------------------
+  # Backend
+  # -----------------------
+
   postgres-db:
     container_name: cs-pgdb
     image: postgres:18-alpine
@@ -51,9 +55,29 @@ services:
       - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
       - CACHE_HOST=${CACHE_HOST}
       - CACHE_PORT=${CACHE_PORT}
+      - ENVIRONMENT=production
     depends_on:
       - postgres-db
       - valkey-caching
+
+  # -----------------------
+  # Log monitory
+  # -----------------------
+
+  vector-logs:
+    container_name: cs-vector
+    restart: unless-stopped
+    build:
+      context: ./logs/
+      dockerfile: Dockerfile
+    volumes:
+      - ./logs/config/vector.yaml:/etc/vector/vector.yaml:ro
+      - /var/run/docker.sock:/var/run/docker.sock:ro
+      - ./logs/data:/var/log/canary_stream
+    deploy:
+      resources:
+        limits:
+          memory: 65M
 
 volumes:
   pgdata:
