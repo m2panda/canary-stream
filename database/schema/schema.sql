@@ -101,3 +101,10 @@ CREATE TABLE IF NOT EXISTS playlist_collabs (
   playlist_id UUID NOT NULL REFERENCES playlist(_id),
   status_id UUID NOT NULL REFERENCES status(_id)
 );
+
+CREATE TABLE IF NOT EXISTS favorites (
+  _id UUID PRIMARY KEY DEFAULT gen_random_uuid(),
+  user_id UUID NOT NULL REFERENCES users(_id),
+  artist_id UUID REFERENCES artists(_id),
+  collection_id UUID REFERENCES collections(_id)
+);
