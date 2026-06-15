@@ -7,6 +7,7 @@ import (
 	"os"
 
 	"canary-stream/backend/core"
+	"canary-stream/backend/i18n"
 	"canary-stream/backend/internal/framework"
 )
 
@@ -18,6 +19,16 @@ import (
  */
 func main() {
 	core.InitLoggerService()
+
+	if err := i18n.Initi18n(); err != nil {
+		slog.Error("Error loading locale files",
+			"event", "i18n.embed_locales",
+			"status", 500,
+			"error", err,
+		)
+
+		return
+	}
 
 	if err := core.RegisterCustomValidators(); err != nil {
 		slog.Error("Error register custom validators",
