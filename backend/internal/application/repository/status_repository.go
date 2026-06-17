@@ -1,7 +1,7 @@
 package repository
 
 import (
-	"canary-stream/backend/internal/application/repository/query"
+	"canary-stream/backend/internal/application/query"
 	"canary-stream/backend/internal/domain"
 	"context"
 	"encoding/json"
