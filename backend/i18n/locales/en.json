@@ -1,1 +1,12 @@
-{}
+{
+  "ERR_SERVER_VALIDATOR_NOT_AVAILABLE": "Error isn't possible validate request data",
+  "ERR_SERVER_READING_REQUEST_BODY": "Error trying to read request body",
+  "ERR_REQUEST_PARSE_BODY": "Error request format invalid",
+  "ERR_REQUEST_VALIDATOR_GENERAL": "At least one field' outside valid parameters",
+  "ERR_REQUEST_VALIDATOR_DEFAULT": "Field {{.Field}} is invalid",
+  "ERR_REQUEST_VALIDATOR_ALPHANUM": "Field {{.Field}} only can contains letters and numbers",
+  "ERR_REQUEST_VALIDATOR_MIN": "Field {{.Field}} minimum length should be {{.Param}}",
+  "ERR_REQUEST_VALIDATOR_MAX": "Field {{.Field}} maximum length should be {{.Param}}",
+  "ERR_REQUEST_VALIDATOR_SECUREPASSWORD": "Field {{.Field}} is invalid. Must contain, one upper case letter, one lower case letter, a number and special character",
+  "ERR_USER_CREATE_REGISTER": "Error on user register, check request data"
+}

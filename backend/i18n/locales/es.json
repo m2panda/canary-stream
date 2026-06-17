@@ -1,1 +1,12 @@
-{}
+{
+  "ERR_SERVER_VALIDATOR_NOT_AVAILABLE": "Error no se puede validar correctamente la petición",
+  "ERR_SERVER_READING_REQUEST_BODY": "Error al intentar leer la información de la petición",
+  "ERR_REQUEST_PARSE_BODY": "Error formato de petición no válido",
+  "ERR_REQUEST_VALIDATOR_GENERAL": "Campos fuera de los parámetros permitidos",
+  "ERR_REQUEST_VALIDATOR_DEFAULT": "El campo {{.Field}} no es válido",
+  "ERR_REQUEST_VALIDATOR_ALPHANUM": "El campo {{.Field}} solo puede contener letras y números",
+  "ERR_REQUEST_VALIDATOR_MIN": "El campo {{.Field}} debe tener al menos {{.Param}} caracteres",
+  "ERR_REQUEST_VALIDATOR_MAX": "El campo {{.Field}} no puede tener más de {{.Param}} caracteres",
+  "ERR_REQUEST_VALIDATOR_SECUREPASSWORD": "El campo {{.Field}} no es válido, debe tener al menos una letra mayúscula, una letra minúscula, un número y un caracter especial",
+  "ERR_USER_CREATE_REGISTER": "Error al registrar el usuario, verifique los datos"
+}
