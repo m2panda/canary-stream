@@ -8,6 +8,7 @@ import (
 	"canary-stream/backend/internal/framework/handlers/status"
 	"canary-stream/backend/internal/framework/handlers/user"
 	"fmt"
+	"log/slog"
 	"net/http"
 
 	"github.com/jackc/pgx/v5/pgxpool"
@@ -20,10 +21,6 @@ var vk valkey.Client
 
 // ! Status
 func statusRouter() {
-	if mux == nil || db == nil || vk == nil {
-		return
-	}
-
 	repository := repository.NewStatusRepository(db, vk)
 	usecase := usecase.NewStatusUseCase(repository)
 
@@ -34,10 +31,6 @@ func statusRouter() {
 
 // ! User
 func userRouter() {
-	if mux == nil || db == nil {
-		return
-	}
-
 	repository := repository.NewUserRepository(db)
 	usecase := usecase.NewUserUseCase(repository)
 
@@ -47,10 +40,6 @@ func userRouter() {
 }
 
 func genreRouter() {
-	if mux == nil || db == nil {
-		return
-	}
-
 	repository := repository.NewGenreRepository(db)
 	usecase := usecase.NewGenreUseCase(repository)
 
@@ -69,22 +58,46 @@ func RouterSetup(server *http.ServeMux) error {
 	pool, err := core.DBConnection()
 
 	if err != nil {
-		return fmt.Errorf("Error established connection with db: %w", err)
+		slog.Error("Error on db connection",
+			"event", "pgdb.connection",
+			"error", err,
+		)
+
+		return err
 	}
 
 	client, err := core.CacheConnection()
 
 	if err != nil {
-		return fmt.Errorf("Error established connection with valkey: %w", err)
+		slog.Error("Error on cache storage connection",
+			"event", "cache.connection",
+			"error", err,
+		)
+
+		return err
 	}
 
 	db = pool
 	vk = client
 	mux = server
 
+	if mux == nil || db == nil || vk == nil {
+		slog.Error("API connection objects no available",
+			"mux", mux != nil,
+			"db", db != nil,
+			"vk", vk != nil,
+		)
+
+		return fmt.Errorf("API connection objects no available")
+	}
+
 	statusRouter()
 	userRouter()
 	genreRouter()
+
+	slog.Info("API routing complete",
+		"event", "router.setup",
+	)
 
 	return nil
 }

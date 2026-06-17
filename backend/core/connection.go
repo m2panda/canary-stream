@@ -3,7 +3,7 @@ package core
 import (
 	"context"
 	"fmt"
-	"log"
+	"log/slog"
 	"os"
 
 	"github.com/jackc/pgx/v5/pgxpool"
@@ -27,14 +27,31 @@ func DBConnection() (*pgxpool.Pool, error) {
 	dbPool, err := pgxpool.New(context.Background(), dbURL)
 
 	if err != nil {
-		log.Printf("Error creating pgx db pool: %v", err)
+		slog.Error("Error connecting api to pgdb",
+			"event", "pgdb.connection_pool",
+			"name", dbName,
+			"user", dbUser,
+			"pass", dbPass,
+			"port", dbPort,
+			"host", dbHost,
+			"error", err,
+		)
+
 		return nil, err
 	}
 
 	if err = dbPool.Ping(context.Background()); err != nil {
-		log.Printf("Error verifying db connection: %v", err)
+		slog.Error("Error verifying db connection",
+			"event", "pgdb.connection_ping",
+			"error", err,
+		)
+
 		return nil, err
 	}
+
+	slog.Info("DB connection successful",
+		"event", "pgdb.connection",
+	)
 
 	return dbPool, nil
 }
@@ -52,9 +69,19 @@ func CacheConnection() (valkey.Client, error) {
 	})
 
 	if err != nil {
-		log.Printf("Error connecting to valkey: %v", err)
+		slog.Error("Error connecting api to valkey",
+			"event", "cache.valkey_connection",
+			"host", cacheHost,
+			"port", cachePort,
+			"error", err,
+		)
+
 		return nil, err
 	}
+
+	slog.Info("Connection to cache storage service complete",
+		"event", "cache.connection",
+	)
 
 	return client, nil
 }

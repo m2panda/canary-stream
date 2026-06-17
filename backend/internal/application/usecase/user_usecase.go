@@ -3,8 +3,7 @@ package usecase
 import (
 	"canary-stream/backend/internal/domain"
 	"context"
-	"fmt"
-	"log"
+	"log/slog"
 
 	"golang.org/x/crypto/bcrypt"
 )
@@ -14,13 +13,24 @@ type userUseCase struct {
 }
 
 func (usecase *userUseCase) CreateRegister(ctx context.Context, username string, password string) (bool, error) {
-	var bytePassword []byte = []byte(password)
+	bytePassword := []byte(password)
 	hash, err := bcrypt.GenerateFromPassword(bytePassword, bcrypt.DefaultCost)
 
 	if err != nil {
-		log.Printf("Error hashing user password: %v", err)
-		return false, fmt.Errorf("Error hashing password")
+		slog.Error("Error hashing user password",
+			"event", "bcrypt.password_hashing",
+			"usecase", "user.create_register",
+			"password", password,
+			"error", err,
+		)
+
+		return false, err
 	}
+
+	slog.Info("Password hashed successful",
+		"event", "bcrypt.password_hashing",
+		"usecase", "user.create_register",
+	)
 
 	return usecase.repository.InsertRegister(ctx, username, string(hash))
 }

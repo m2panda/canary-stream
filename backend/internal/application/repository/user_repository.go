@@ -5,7 +5,7 @@ import (
 	"canary-stream/backend/internal/domain"
 	"context"
 	"fmt"
-	"log"
+	"log/slog"
 
 	"github.com/jackc/pgx/v5/pgxpool"
 )
@@ -15,7 +15,7 @@ type userRepository struct {
 }
 
 func (repository *userRepository) InsertRegister(ctx context.Context, username string, hash string) (bool, error) {
-	var query string = fmt.Sprintf(
+	query := fmt.Sprintf(
 		query.UserCreateNew,
 		username,
 		hash,
@@ -25,14 +25,26 @@ func (repository *userRepository) InsertRegister(ctx context.Context, username s
 		domain.StatusPending,
 	)
 
-	log.Print(query)
+	if _, err := repository.db.Exec(ctx, query); err != nil {
+		slog.Error("Error inserting new user",
+			"event", "db.exec_query",
+			"repository", "user.insert_register",
+			"username", username,
+			"hash", hash,
+			"user_admin", domain.UserAdmin,
+			"user_listener", domain.UserListener,
+			"status_active", domain.StatusActive,
+			"status_pending", domain.StatusPending,
+			"error", err,
+		)
 
-	_, err := repository.db.Exec(ctx, query)
-
-	if err != nil {
-		log.Printf("Failed to insert new user: %v", err)
-		return false, fmt.Errorf("Error inserting new user")
+		return false, err
 	}
+
+	slog.Info("New user inserted successful",
+		"event", "repository.insert_register",
+		"repository", "user.insert_register",
+	)
 
 	return true, nil
 }
