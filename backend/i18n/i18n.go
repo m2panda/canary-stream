@@ -10,6 +10,7 @@ import (
 )
 
 var (
+	//go:embed locales/*.json
 	localeFS embed.FS
 	bundle   *i18n.Bundle
 )
@@ -46,18 +47,34 @@ func Initi18n() error {
 	return nil
 }
 
-func Translate(lang string, messageID string, templateData map[string]interface{}) (string, error) {
-	localizer := i18n.NewLocalizer(bundle, lang)
+func Translate(langHeader string, messageID MessageID, templateData map[string]interface{}) (string, error) {
+	tags, _, err := language.ParseAcceptLanguage(langHeader)
+	langs := []string{}
 
+	if err != nil {
+		slog.Error("Error parsing language header",
+			"event", "i18n.parser",
+			"header", langHeader,
+			"error", err,
+		)
+
+		return "", err
+	}
+
+	for _, tag := range tags {
+		langs = append(langs, tag.String())
+	}
+
+	localizer := i18n.NewLocalizer(bundle, langs...)
 	msg, err := localizer.Localize(&i18n.LocalizeConfig{
-		MessageID:    messageID,
+		MessageID:    string(messageID),
 		TemplateData: templateData,
 	})
 
 	if err != nil {
 		slog.Error("Error translating message id",
 			"event", "i18n.translation",
-			"lang", lang,
+			"langs", langs,
 			"message_id", messageID,
 			"template_data", templateData,
 			"status", 500,
@@ -67,10 +84,10 @@ func Translate(lang string, messageID string, templateData map[string]interface{
 		return "", err
 	}
 
-	slog.Info("Translate message successfullly",
+	slog.Info("Translate message successful",
 		"event", "i18n.translation",
 		"message", msg,
-		"lang", lang,
+		"langs", langs,
 		"message_id", messageID,
 		"template_data", templateData,
 	)
