@@ -3,9 +3,9 @@ package user
 import (
 	"bytes"
 	"canary-stream/backend/core"
-	"canary-stream/backend/i18n"
 	"canary-stream/backend/internal/domain"
 	"canary-stream/backend/internal/framework/dto"
+	"canary-stream/backend/internal/framework/i18n"
 	"encoding/json"
 	"fmt"
 	"io"

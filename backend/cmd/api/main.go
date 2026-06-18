@@ -7,8 +7,8 @@ import (
 	"os"
 
 	"canary-stream/backend/core"
-	"canary-stream/backend/i18n"
 	"canary-stream/backend/internal/framework"
+	"canary-stream/backend/internal/framework/i18n"
 )
 
 /**
