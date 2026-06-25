@@ -18,19 +18,25 @@ services:
     volumes:
       - pgdata:/var/lib/postgresql/18/docker
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U $${POSTGRES_USER} -d $${POSTGRES_DB}"]
+      test:
+        ["CMD", "pg_isready", "-U", "${POSTGRES_USER}", "-d", "${POSTGRES_DB}"]
       start_period: 15s
       interval: 5s
       timeout: 10s
       retries: 5
   valkey-caching:
     container_name: cs-vkcache
-    image: valkey/valkey:9.1-alpine
     restart: unless-stopped
     expose:
       - "${CACHE_PORT}"
+    build:
+      context: ./cache/
+      dockerfile: Dockerfile
     networks:
       - cs_net
+    environment:
+      - VALKEY_USER=${VALKEY_USER}
+      - VALKEY_PASSWORD=${VALKEY_PASSWORD}
     volumes:
       - vkdata:/data
     deploy:
@@ -40,7 +46,16 @@ services:
         limits:
           memory: 256M
     healthcheck:
-      test: ["CMD", "valkey-cli", "ping"]
+      test:
+        [
+          "CMD",
+          "valkey-cli",
+          "-u",
+          "${VALKEY_USER}",
+          "-a",
+          "${VALKEY_PASSWORD}",
+          "ping",
+        ]
       start_period: 10s
       interval: 5s
       timeout: 5s
@@ -67,6 +82,8 @@ services:
       - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
       - CACHE_HOST=${CACHE_HOST}
       - CACHE_PORT=${CACHE_PORT}
+      - VALKEY_USER=${VALKEY_USER}
+      - VALKEY_PASSWORD=${VALKEY_PASSWORD}
       - ENVIRONMENT=production
     depends_on:
       postgres-db:
