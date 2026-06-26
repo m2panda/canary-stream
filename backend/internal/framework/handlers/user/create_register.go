@@ -2,10 +2,10 @@ package user
 
 import (
 	"bytes"
-	"canary-stream/backend/core"
 	"canary-stream/backend/internal/domain"
 	"canary-stream/backend/internal/framework/dto"
 	"canary-stream/backend/internal/framework/i18n"
+	"canary-stream/backend/internal/framework/validation"
 	"encoding/json"
 	"fmt"
 	"io"
@@ -37,7 +37,7 @@ func (handler *createRegisterHandler) ServeHTTP(response http.ResponseWriter, re
 
 	langHeader := request.Header.Get("Accept-Language")
 
-	if core.Validator == nil {
+	if validation.Validator == nil {
 		slog.Error("Error validator is not available",
 			"event", "validator.status",
 			"handler", "user.create_register",
@@ -98,7 +98,7 @@ func (handler *createRegisterHandler) ServeHTTP(response http.ResponseWriter, re
 		return
 	}
 
-	if err := (*core.Validator).Struct(user); err != nil {
+	if err := (*validation.Validator).Struct(user); err != nil {
 		slog.Error("Error validating request params in fields",
 			"event", "validator.param_validation",
 			"handler", "user.create_register",

@@ -1,4 +1,4 @@
-package core
+package database
 
 import (
 	"context"
@@ -7,7 +7,6 @@ import (
 	"os"
 
 	"github.com/jackc/pgx/v5/pgxpool"
-	"github.com/valkey-io/valkey-go"
 )
 
 /**
@@ -31,7 +30,6 @@ func DBConnection() (*pgxpool.Pool, error) {
 			"event", "pgdb.connection_pool",
 			"name", dbName,
 			"user", dbUser,
-			"pass", dbPass,
 			"port", dbPort,
 			"host", dbHost,
 			"error", err,
@@ -54,34 +52,4 @@ func DBConnection() (*pgxpool.Pool, error) {
 	)
 
 	return dbPool, nil
-}
-
-/**
- * Function to connect valkey server using
- * official valkey go library with env port information
- */
-func CacheConnection() (valkey.Client, error) {
-	cacheHost := os.Getenv("CACHE_HOST")
-	cachePort := os.Getenv("CACHE_PORT")
-
-	client, err := valkey.NewClient(valkey.ClientOption{
-		InitAddress: []string{fmt.Sprintf("%s:%s", cacheHost, cachePort)},
-	})
-
-	if err != nil {
-		slog.Error("Error connecting api to valkey",
-			"event", "cache.valkey_connection",
-			"host", cacheHost,
-			"port", cachePort,
-			"error", err,
-		)
-
-		return nil, err
-	}
-
-	slog.Info("Connection to cache storage service complete",
-		"event", "cache.connection",
-	)
-
-	return client, nil
 }

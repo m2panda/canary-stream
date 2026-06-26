@@ -1,7 +1,8 @@
 package framework
 
 import (
-	"canary-stream/backend/core"
+	"canary-stream/backend/internal/application/cache"
+	"canary-stream/backend/internal/application/database"
 	"canary-stream/backend/internal/application/repository"
 	"canary-stream/backend/internal/application/usecase"
 	"canary-stream/backend/internal/framework/handlers/genre"
@@ -55,7 +56,7 @@ func genreRouter() {
  * to route entity endpoints
  */
 func RouterSetup(server *http.ServeMux) error {
-	pool, err := core.DBConnection()
+	pool, err := database.DBConnection()
 
 	if err != nil {
 		slog.Error("Error on db connection",
@@ -66,7 +67,7 @@ func RouterSetup(server *http.ServeMux) error {
 		return err
 	}
 
-	client, err := core.CacheConnection()
+	client, err := cache.CacheConnection()
 
 	if err != nil {
 		slog.Error("Error on cache storage connection",

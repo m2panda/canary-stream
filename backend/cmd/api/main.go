@@ -9,6 +9,7 @@ import (
 	"canary-stream/backend/core"
 	"canary-stream/backend/internal/framework"
 	"canary-stream/backend/internal/framework/i18n"
+	"canary-stream/backend/internal/framework/validation"
 )
 
 /**
@@ -30,7 +31,7 @@ func main() {
 		return
 	}
 
-	if err := core.RegisterCustomValidators(); err != nil {
+	if err := validation.RegisterCustomValidators(); err != nil {
 		slog.Error("Error register custom validators",
 			"event", "validator.custom_validators",
 			"status", 500,

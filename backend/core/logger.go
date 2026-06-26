@@ -8,7 +8,7 @@ import (
 func InitLoggerService() {
 	var handler slog.Handler
 
-	environment := os.Getenv("ENVIRONMENT")
+	environment := os.Getenv("ENV_MODE")
 
 	if environment == "production" {
 		handler = slog.NewJSONHandler(os.Stdout, &slog.HandlerOptions{
