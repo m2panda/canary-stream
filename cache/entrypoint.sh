@@ -1,5 +1,5 @@
 #!/bin/sh
 
-envsubst < /etc/valkey/valkey.conf.template > /usr/local/etc/valkey/valkey.conf
+envsubst < /etc/valkey/valkey.conf.template > /etc/valkey/valkey.conf
 
-exec valkey-server /usr/local/etc/valkey/valkey.conf
+exec valkey-server /etc/valkey/valkey.conf
