@@ -8,7 +8,9 @@ transforms:
     inputs:
       - "cs_docker_logs"
     source: |
-      if get_env_var("ENV_MODE") != "development" {
+      env_mode, err = get_env_var("ENV_MODE")
+
+      if err != null || env_mode != "development" {
         abort
       }
 
