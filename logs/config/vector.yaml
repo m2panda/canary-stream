@@ -1,12 +1,28 @@
 sources:
-  docker_logs:
+  cs_docker_logs:
     type: "docker_logs"
+
+transforms:
+  debug_filter:
+    type: "remap"
+    inputs:
+      - "cs_docker_logs"
+    source: |
+      if get_env_var("ENV_MODE") != "development" {
+        abort
+      }
 
 sinks:
   file_output:
     type: "file"
     inputs:
-      - "docker_logs"
+      - "cs_docker_logs"
     path: "/var/log/canary_stream/%Y-%m-%d/{{ container_name }}.log"
     encoding:
       codec: "json"
+  console_debug:
+    type: "console"
+    inputs:
+      - "debug_filter"
+    encoding:
+      codec: json

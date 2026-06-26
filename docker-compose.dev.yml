@@ -10,4 +10,8 @@ services:
     volumes:
       - ./backend:/app
     environment:
-      - ENVIRONMENT=development
+      - ENV_MODE=development
+
+  vector-logs:
+    environment:
+      - ENV_MODE=development

@@ -37,6 +37,7 @@ services:
     environment:
       - VALKEY_USER=${VALKEY_USER}
       - VALKEY_PASSWORD=${VALKEY_PASSWORD}
+      - VALKEYCLI_AUTH=${VALKEY_PASSWORD}
     volumes:
       - vkdata:/data
     deploy:
@@ -46,16 +47,7 @@ services:
         limits:
           memory: 256M
     healthcheck:
-      test:
-        [
-          "CMD",
-          "valkey-cli",
-          "-u",
-          "${VALKEY_USER}",
-          "-a",
-          "${VALKEY_PASSWORD}",
-          "ping",
-        ]
+      test: ["CMD", "valkey-cli", "--username", "${VALKEY_USER}", "ping"]
       start_period: 10s
       interval: 5s
       timeout: 5s
@@ -84,7 +76,7 @@ services:
       - CACHE_PORT=${CACHE_PORT}
       - VALKEY_USER=${VALKEY_USER}
       - VALKEY_PASSWORD=${VALKEY_PASSWORD}
-      - ENVIRONMENT=production
+      - ENV_MODE=production
     depends_on:
       postgres-db:
         condition: service_healthy
@@ -103,6 +95,8 @@ services:
     build:
       context: ./logs/
       dockerfile: Dockerfile
+    environment:
+      - ENV_MODE=production
     volumes:
       - ./logs/config/vector.yaml:/etc/vector/vector.yaml:ro
       - /var/run/docker.sock:/var/run/docker.sock:ro
