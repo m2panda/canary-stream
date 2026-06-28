@@ -1,17 +1,17 @@
 services:
-  postgres-db:
-    volumes:
-      - ./database:/docker-entrypoint-initdb.d:ro
-  golang-api:
-    build:
-      target: development
-    ports:
-      - "${API_PORT}:${API_PORT}"
-    volumes:
-      - ./backend:/app
-    environment:
-      - ENV_MODE=development
+   postgres-db:
+      volumes:
+         - ./database:/docker-entrypoint-initdb.d:ro
+   golang-api:
+      build:
+         target: development
+      ports:
+         - "${API_PORT}:${API_PORT}"
+      volumes:
+         - ./backend:/app
+      environment:
+         - ENV_MODE=development
 
-  vector-logs:
-    environment:
-      - ENV_MODE=development
+   vector-logs:
+      environment:
+         - ENV_MODE=development

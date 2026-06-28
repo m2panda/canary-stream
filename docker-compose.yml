@@ -1,117 +1,124 @@
 services:
-  # -----------------------
-  # Backend
-  # -----------------------
+   # -----------------------
+   # Backend
+   # -----------------------
 
-  postgres-db:
-    container_name: cs-pgdb
-    image: postgres:18-alpine
-    restart: unless-stopped
-    expose:
-      - "${DB_PORT}"
-    networks:
-      - cs_net
-    environment:
-      - POSTGRES_DB=${POSTGRES_DB}
-      - POSTGRES_USER=${POSTGRES_USER}
-      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
-    volumes:
-      - pgdata:/var/lib/postgresql/18/docker
-    healthcheck:
-      test:
-        ["CMD", "pg_isready", "-U", "${POSTGRES_USER}", "-d", "${POSTGRES_DB}"]
-      start_period: 15s
-      interval: 5s
-      timeout: 10s
-      retries: 5
+   postgres-db:
+      container_name: cs-pgdb
+      image: postgres:18-alpine
+      restart: unless-stopped
+      expose:
+         - "${DB_PORT}"
+      networks:
+         - cs_net
+      environment:
+         - POSTGRES_DB=${POSTGRES_DB}
+         - POSTGRES_USER=${POSTGRES_USER}
+         - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
+      volumes:
+         - pgdata:/var/lib/postgresql/18/docker
+      healthcheck:
+         test:
+            [
+               "CMD",
+               "pg_isready",
+               "-U",
+               "${POSTGRES_USER}",
+               "-d",
+               "${POSTGRES_DB}",
+            ]
+         start_period: 15s
+         interval: 5s
+         timeout: 10s
+         retries: 5
 
-  valkey-caching:
-    container_name: cs-vkcache
-    restart: unless-stopped
-    expose:
-      - "${CACHE_PORT}"
-    build:
-      context: ./cache/
-      dockerfile: Dockerfile
-    networks:
-      - cs_net
-    environment:
-      - VALKEY_USER=${VALKEY_USER}
-      - VALKEY_PASSWORD=${VALKEY_PASSWORD}
-      - VALKEYCLI_AUTH=${VALKEY_PASSWORD}
-    volumes:
-      - vkdata:/data
-    deploy:
-      resources:
-        reservations:
-          memory: 128M
-        limits:
-          memory: 256M
-    healthcheck:
-      test: ["CMD", "valkey-cli", "--user", "${VALKEY_USER}", "ping"]
-      start_period: 10s
-      interval: 5s
-      timeout: 5s
-      retries: 5
+   valkey-caching:
+      container_name: cs-vkcache
+      restart: unless-stopped
+      expose:
+         - "${CACHE_PORT}"
+      build:
+         context: ./cache/
+         dockerfile: Dockerfile
+      networks:
+         - cs_net
+      environment:
+         - VALKEY_USER=${VALKEY_USER}
+         - VALKEY_PASSWORD=${VALKEY_PASSWORD}
+         - VALKEYCLI_AUTH=${VALKEY_PASSWORD}
+      volumes:
+         - vkdata:/data
+      deploy:
+         resources:
+            reservations:
+               memory: 128M
+            limits:
+               memory: 256M
+      healthcheck:
+         test: ["CMD", "valkey-cli", "--user", "${VALKEY_USER}", "ping"]
+         start_period: 10s
+         interval: 5s
+         timeout: 5s
+         retries: 5
 
-  golang-api:
-    container_name: cs-goapi
-    restart: unless-stopped
-    expose:
-      - "${API_PORT}"
-    build:
-      context: ./backend/
-      dockerfile: Dockerfile
-      target: production
-      args:
-        - API_PORT=${API_PORT}
-    networks:
-      - cs_net
-    environment:
-      - API_PORT=${API_PORT}
-      - DB_HOST=${DB_HOST}
-      - DB_PORT=${DB_PORT}
-      - POSTGRES_DB=${POSTGRES_DB}
-      - POSTGRES_USER=${POSTGRES_USER}
-      - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
-      - CACHE_HOST=${CACHE_HOST}
-      - CACHE_PORT=${CACHE_PORT}
-      - VALKEY_USER=${VALKEY_USER}
-      - VALKEY_PASSWORD=${VALKEY_PASSWORD}
-      - ENV_MODE=production
-    depends_on:
-      postgres-db:
-        condition: service_healthy
-        restart: true
-      valkey-caching:
-        condition: service_healthy
-        restart: true
+   golang-api:
+      container_name: cs-goapi
+      restart: unless-stopped
+      expose:
+         - "${API_PORT}"
+      build:
+         context: ./backend/
+         dockerfile: Dockerfile
+         target: production
+         args:
+            - API_PORT=${API_PORT}
+      networks:
+         - cs_net
+      environment:
+         - API_PORT=${API_PORT}
+         - DB_HOST=${DB_HOST}
+         - DB_PORT=${DB_PORT}
+         - POSTGRES_DB=${POSTGRES_DB}
+         - POSTGRES_USER=${POSTGRES_USER}
+         - POSTGRES_PASSWORD=${POSTGRES_PASSWORD}
+         - CACHE_HOST=${CACHE_HOST}
+         - CACHE_PORT=${CACHE_PORT}
+         - VALKEY_USER=${VALKEY_USER}
+         - VALKEY_PASSWORD=${VALKEY_PASSWORD}
+         - ENV_MODE=production
+      depends_on:
+         postgres-db:
+            condition: service_healthy
+            restart: true
+         valkey-caching:
+            condition: service_healthy
+            restart: true
 
-  # -----------------------
-  # Log monitory
-  # -----------------------
+   # -----------------------
+   # Log monitory
+   # -----------------------
 
-  vector-logs:
-    container_name: cs-vector
-    restart: unless-stopped
-    build:
-      context: ./logs/
-      dockerfile: Dockerfile
-    environment:
-      - ENV_MODE=production
-    volumes:
-      - ./logs/config/vector.yaml:/etc/vector/vector.yaml:ro
-      - /var/run/docker.sock:/var/run/docker.sock:ro
-      - ./logs/data:/var/log/canary_stream
-    deploy:
-      resources:
-        limits:
-          memory: 80M
+   vector-logs:
+      container_name: cs-vector
+      restart: unless-stopped
+      build:
+         context: ./logs/
+         dockerfile: Dockerfile
+      environment:
+         - ENV_MODE=production
+      volumes:
+         - ./logs/config/vector.yaml:/etc/vector/vector.yaml:ro
+         - /var/run/docker.sock:/var/run/docker.sock:ro
+         - ./logs/data:/var/log/canary_stream
+      deploy:
+         resources:
+            limits:
+               memory: 80M
 
 volumes:
-  pgdata:
-  vkdata:
+   pgdata:
+   vkdata:
 
 networks:
-  cs_net:
-    driver: bridge
+   cs_net:
+      driver: bridge
