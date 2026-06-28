@@ -1,8 +1,6 @@
 package framework
 
 import (
-	"canary-stream/backend/internal/application/cache"
-	"canary-stream/backend/internal/application/database"
 	"canary-stream/backend/internal/application/repository"
 	"canary-stream/backend/internal/application/usecase"
 	"canary-stream/backend/internal/framework/handlers/genre"
@@ -55,31 +53,9 @@ func genreRouter() {
  * set package variable values; call each support function
  * to route entity endpoints
  */
-func RouterSetup(server *http.ServeMux) error {
-	pool, err := database.DBConnection()
-
-	if err != nil {
-		slog.Error("Error on db connection",
-			"event", "pgdb.connection",
-			"error", err,
-		)
-
-		return err
-	}
-
-	client, err := cache.CacheConnection()
-
-	if err != nil {
-		slog.Error("Error on cache storage connection",
-			"event", "cache.connection",
-			"error", err,
-		)
-
-		return err
-	}
-
-	db = pool
-	vk = client
+func RouterSetup(server *http.ServeMux, dbConn *pgxpool.Pool, vkConn valkey.Client) error {
+	db = dbConn
+	vk = vkConn
 	mux = server
 
 	if mux == nil || db == nil || vk == nil {

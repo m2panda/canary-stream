@@ -24,6 +24,7 @@ services:
       interval: 5s
       timeout: 10s
       retries: 5
+
   valkey-caching:
     container_name: cs-vkcache
     restart: unless-stopped
@@ -52,6 +53,7 @@ services:
       interval: 5s
       timeout: 5s
       retries: 5
+
   golang-api:
     container_name: cs-goapi
     restart: unless-stopped
