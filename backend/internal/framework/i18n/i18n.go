@@ -77,7 +77,6 @@ func Translate(langHeader string, messageID MessageID, templateData map[string]i
 			"langs", langs,
 			"message_id", messageID,
 			"template_data", templateData,
-			"status", 500,
 			"error", err,
 		)
 

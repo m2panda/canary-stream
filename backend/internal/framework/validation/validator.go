@@ -52,7 +52,6 @@ func RegisterCustomValidators() error {
 		slog.Error("Error register password validator",
 			"event", "validator.register_validator",
 			"validator", "secure_password",
-			"status", 500,
 			"error", err,
 		)
 

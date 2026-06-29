@@ -11,6 +11,7 @@ import (
 	"canary-stream/backend/internal/application/database"
 	"canary-stream/backend/internal/framework"
 	"canary-stream/backend/internal/framework/i18n"
+	"canary-stream/backend/internal/framework/middleware"
 	"canary-stream/backend/internal/framework/validation"
 )
 
@@ -63,8 +64,9 @@ func main() {
 		return
 	}
 
-	server := http.NewServeMux()
+	middleware.InitializeIPsCleaner()
 
+	server := http.NewServeMux()
 	apiPort := os.Getenv("API_PORT")
 	muxPort := fmt.Sprintf(":%s", apiPort)
 

@@ -20,7 +20,6 @@ func (usecase *userUseCase) CreateRegister(ctx context.Context, username string,
 		slog.Error("Error hashing user password",
 			"event", "bcrypt.password_hashing",
 			"usecase", "user.create_register",
-			"password", password,
 			"error", err,
 		)
 
